@@ -17,7 +17,7 @@ Item {
     property var clockSource: function() { return Date.now(); }
     property double now: clockSource()
     signal configureRequested()
-    // 0 = climate, 1 = scenes.
+    // 0 = climate, 1 = scenes, 2 = setup.
     property int page: 0
     readonly property var dayNames: [i18n("Mon"), i18n("Tue"), i18n("Wed"), i18n("Thu"), i18n("Fri"), i18n("Sat"), i18n("Sun")]
     readonly property var dayLetters: [i18n("M"), i18n("T"), i18n("W"), i18n("T"), i18n("F"), i18n("S"), i18n("S")]
@@ -202,7 +202,7 @@ Item {
                 Layout.fillWidth: true
                 spacing: Kirigami.Units.largeSpacing
                 Repeater {
-                    model: [i18n("CLIMATE"), i18n("SCENES")]
+                    model: [i18n("CLIMATE"), i18n("SCENES"), i18n("SETUP")]
                     delegate: Item {
                         id: tab
                         required property string modelData
@@ -639,6 +639,9 @@ Item {
             }
 
             ScenesPage {
+                deck: root
+            }
+            SetupPage {
                 deck: root
             }
         }

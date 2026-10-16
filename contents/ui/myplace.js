@@ -393,3 +393,32 @@ function countdownPayload(info, minutes) {
     out.info[countdownField(info)] = Math.max(0, Math.min(MAX_COUNTDOWN, Math.round(Number(minutes) || 0)));
     return out;
 }
+
+// ---- Setup: MyComfort ---------------------------------------------------------
+
+// "myzone" (neither flag), "mytemp" (climate control) or "myauto".
+function temperatureControl(info) {
+    if (info && info.myAutoModeEnabled)
+        return "myauto";
+    if (info && info.climateControlModeEnabled)
+        return "mytemp";
+    return "myzone";
+}
+
+// Both flags together, as the app's three-way switch sets them.
+function temperatureControlFields(value) {
+    return {
+        climateControlModeEnabled: value === "mytemp",
+        myAutoModeEnabled: value === "myauto"
+    };
+}
+
+// The app shows 20-24 until a range has been stored.
+function myAutoRange(info) {
+    var heat = Number(info && info.myAutoHeatTargetTemp), cool = Number(info && info.myAutoCoolTargetTemp);
+    return { heat: heat > 0 ? heat : 20, cool: cool > 0 ? cool : 24 };
+}
+
+function myAutoRangeValid(heat, cool) {
+    return heat >= 16 && heat <= 28 && cool >= 20 && cool <= 32 && cool - heat >= 4;
+}

@@ -108,6 +108,8 @@ TestCase {
         scenes.startEdit(scenes.scenes[1]);
         save("climate-deck-scene-editor");
         scenes.closeEditor();
+        deck.page = 2;
+        save("climate-deck-setup");
         deck.page = 0;
     }
 

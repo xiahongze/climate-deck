@@ -115,9 +115,11 @@ Item {
                 width: scroll.availableWidth
                 spacing: Kirigami.Units.largeSpacing
 
-                Controls.TextField {
+                DeckField {
                     id: nameField
                     objectName: "nameField"
+                    ink: editor.colors.ink
+                    accent: editor.tone
                     Layout.fillWidth: true
                     placeholderText: i18n("Scene name (up to 12 characters)")
                     maximumLength: 12

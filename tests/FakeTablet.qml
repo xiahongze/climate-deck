@@ -20,6 +20,10 @@ QtObject {
                 return done(false, 0, "");
             if (url.indexOf("/getSystemData") >= 0)
                 return done(true, 200, tablet.pollReply || JSON.stringify(tablet.system));
+            if (url.indexOf("/setMySystem?") >= 0) {
+                Object.assign(tablet.system.system, JSON.parse(decodeURIComponent(url.split("json=")[1])));
+                return done(true, 200, '{"request":"setMySystem","ack":true}');
+            }
             if (url.indexOf("/setScene?") >= 0 || url.indexOf("/runScene?") >= 0)
                 return done(true, 200, tablet.scene(url));
             return done(true, 200, tablet.commandReply);

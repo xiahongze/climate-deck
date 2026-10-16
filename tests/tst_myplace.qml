@@ -154,4 +154,18 @@ TestCase {
         compare(JSON.stringify(MyPlace.countdownPayload({ state: "off" }, 900)), '{"info":{"countDownToOn":720}}');
         compare(JSON.stringify(MyPlace.countdownPayload({ state: "on" }, 0)), '{"info":{"countDownToOff":0}}');
     }
+
+    function test_mycomfort() {
+        compare(MyPlace.temperatureControl({}), "myzone");
+        compare(MyPlace.temperatureControl({ climateControlModeEnabled: true }), "mytemp");
+        compare(MyPlace.temperatureControl({ myAutoModeEnabled: true }), "myauto");
+        compare(JSON.stringify(MyPlace.temperatureControlFields("myauto")), '{"climateControlModeEnabled":false,"myAutoModeEnabled":true}');
+        compare(JSON.stringify(MyPlace.temperatureControlFields("myzone")), '{"climateControlModeEnabled":false,"myAutoModeEnabled":false}');
+        compare(JSON.stringify(MyPlace.myAutoRange({})), '{"heat":20,"cool":24}');
+        compare(JSON.stringify(MyPlace.myAutoRange({ myAutoHeatTargetTemp: 18, myAutoCoolTargetTemp: 26 })), '{"heat":18,"cool":26}');
+        verify(MyPlace.myAutoRangeValid(20, 24));
+        verify(!MyPlace.myAutoRangeValid(21, 24)); // under 4 apart
+        verify(!MyPlace.myAutoRangeValid(15, 24));
+        verify(!MyPlace.myAutoRangeValid(20, 33));
+    }
 }

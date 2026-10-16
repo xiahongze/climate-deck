@@ -296,6 +296,24 @@ Error reasons (**Code**):
 
 An unknown or empty aircon key with nothing usable in it gives `Valid JSON, but nothing useful there.` **Verified**
 
+## Setup options (MyComfort)
+
+The app's Setup screen ("options for this aircon / this system") maps to these fields. Each was changed and restored on the live system. **Verified**
+
+| App option | Command | Field |
+|---|---|---|
+| mysleep$aver | `setAircon` | `info.quietNightModeEnabled` (bool). While it runs, `quietNightModeIsRunning` is true, and the app won't change MyZone without first asking to exit it. |
+| myfan speed | `setAircon` | `info.aaAutoFanModeEnabled` (bool). It makes `autoAA` (MyFan) available. The app only shows it when the unit has auto fan. |
+| temperature control: myzone | `setAircon` | `climateControlModeEnabled: false, myAutoModeEnabled: false` |
+| temperature control: mytemp | `setAircon` | `climateControlModeEnabled: true, myAutoModeEnabled: false`. "mytemp acts as an automated myzone". |
+| temperature control: myauto | `setAircon` | `climateControlModeEnabled: false, myAutoModeEnabled: true`. It adds `myauto` to the modes. |
+| myauto setting | `setAircon` | `info.myAutoHeatTargetTemp` (16–28) and `info.myAutoCoolTargetTemp` (20–32), with cool at least 4° above heat. The app enforces the limits; the tablet doesn't. They are absent until first set, and the app shows 20–24 then. |
+| Show Actual Temperature | `setMySystem` | `GET /setMySystem?json={"showMeasuredTemp":true}` sets `system.showMeasuredTemp`. |
+
+The app sends the two temperature-control flags as two requests. Sending them together in one `setAircon` works the same.
+
+Renaming: `setAircon` with `{"ac1":{"zones":{"z03":{"name":"Study"}}}}`, or `{"ac1":{"info":{"name":"Upstairs"}}}` for the aircon. Names are 12 characters max; a longer one is rejected with `Zone name for zone z03 is too long - maximum length is 12`. **Verified**
+
 ## Scenes
 
 Scenes live on the tablet under `myScenes` in `getSystemData`: `{"scenes": {"s10001": {...}}, "scenesOrder": ["s10001", ...]}`. Each one is an aircon snapshot that the tablet can apply on demand or on a timer. The tablet also runs the timers itself, so nothing needs to be awake on your side. **Verified**

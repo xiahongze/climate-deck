@@ -18,6 +18,10 @@ Scenes have their own page, with an editor for days, times and the aircon settin
 | --- | --- |
 | ![Scene list](docs/screenshots/climate-deck-scenes.png) | ![Scene editor](docs/screenshots/climate-deck-scene-editor.png) |
 
+The Setup tab renames zones and holds the MyComfort options:
+
+![Setup page](docs/screenshots/climate-deck-setup.png)
+
 ## What it shows
 
 - **Header.** Site and aircon name, link status (`LIVE`, `RETRYING`, `OFFLINE`) and the outdoor temperature when the tablet has a valid reading.
@@ -40,7 +44,11 @@ Scenes have their own page, with an editor for days, times and the aircon settin
   - **Edit** opens the editor, and **Delete** asks for a second click.
   - **+ New scene** starts from the aircon's current settings.
   - The editor sets the name, days, start time, an optional turn-off time, power, mode, fan, target, MyZone, and each zone's open/closed state and target.
-  - The Android app only offers this on the wall tablet. The tablet accepts it from any device on your network, and the tablet runs the timers itself.
+- **Setup** (the third tab):
+  - rename the aircon and its zones (12 characters max)
+  - the MyComfort options from the app's Setup screen: MySleep$aver, MyFan speed, temperature control (MyZone, MyTemp or MyAuto) and the MyAuto range
+  - the system option to show actual temperatures
+  - The Android app only offers scene editing on the wall tablet. The tablet accepts it from any device on your network, and the tablet runs the timers itself.
 
 Changes show immediately. Taps on − and + are batched into one command, and the widget re-reads the tablet a moment later to confirm. If the tablet stops answering, the last reading stays on screen, dimmed, and the controls lock until it is back.
 
