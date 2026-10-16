@@ -48,7 +48,7 @@ The User-Agent affects how the server behaves:
 
 - **`MyAir5/8.244`** gets `<iZS10.3><request>No longer supported</request></iZS10.3>`. **Code**
 - **A UA containing `Android` or `Darwin`.** After a successful set command, the tablet forwards a copy of it to its Firebase event log, tagged `NW` or `PW`. **Code**
-- **Any other UA**, for example `ClimateDeck/0.1`, works the same but isn't forwarded. **Verified**
+- **Any other UA**, for example `ClimateDeck/0.1`, works the same (**Verified**) and isn't forwarded (**Code**).
 
 ## Read: `GET /getSystemData`
 
