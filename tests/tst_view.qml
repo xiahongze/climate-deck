@@ -32,7 +32,13 @@ TestCase {
         xhr.open("GET", Qt.resolvedUrl("fixtures/system.json"));
         xhr.send();
         tryVerify(() => fixture.length > 0);
+    }
+
+    function init() {
         tablet.load(fixture);
+        tablet.reachable = true;
+        client.host = "";
+        client.host = "192.168.1.50";
         client.poll();
     }
 
@@ -61,5 +67,19 @@ TestCase {
         tablet.reachable = true;
         client.poll();
         verify(deck.canControl);
+    }
+
+    function test_set_myzone_opens_closed_zone() {
+        tablet.log = [];
+        const living = deck.zones.find(z => z.key === "z01");
+        verify(!living.open);
+        verify(deck.canChangeMyZone);
+        compare(deck.myZoneChoices.length, 6);
+        deck.setMyZone(living);
+        compare(JSON.stringify(tablet.commands()), '[{"ac1":{"info":{"myZone":1}}},{"ac1":{"zones":{"z01":{"state":"open"}}}}]');
+        // Target now follows the new MyZone.
+        compare(deck.target, 25);
+        verify(deck.zones.find(z => z.key === "z01").isMyZone);
+        verify(findChild(deck, "myZoneChip").visible);
     }
 }

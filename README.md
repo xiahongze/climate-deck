@@ -16,12 +16,12 @@ While the unit runs, the deck takes on the mode's colour:
 
 - **Header.** Site and aircon name, link status (`LIVE`, `RETRYING`, `OFFLINE`) and the outdoor temperature when the tablet has a valid reading.
 - **Inside.** The average of every zone with a working sensor, the coldest-to-warmest range, and a trace of the last few hours.
-- **Target.** The set point, with − and +. When a MyZone is set, this is the MyZone zone's target, matching the MyPlace app.
+- **Target and MyZone.** The set point, with − and +. When a MyZone is set, this is the MyZone zone's target, matching the MyPlace app. Click the zone name under the target (`BED 1 ▾`) to pick a different MyZone, the zone the system optimises for. Only zones with a working sensor are listed; choosing a closed zone opens it, as the app does.
 - **Power, mode and fan.** Cool, Heat, Fan, Dry, plus MyAuto if it is enabled on your system. Low, Medium, High and Auto. Auto is MyFan when the system supports it.
 - **Zones.** Each zone shows:
   - its temperature, with a colour strip running from icy blue to warm red
   - an open/close switch
-  - its own target, or a damper % for zones without a sensor
+  - its own target, or a damper % for zones without a sensor (adjustable while closed too)
   - a MyZone badge where it applies
   - sensor warnings
   - a history sparkline

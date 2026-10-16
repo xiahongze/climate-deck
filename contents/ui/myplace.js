@@ -109,6 +109,30 @@ function targetPath(ac) {
     return mz ? "zones." + zoneKey(mz) + ".setTemp" : "info.setTemp";
 }
 
+// The app only offers a MyZone change while one is already set (1-10), and
+// not during Quiet Night mode.
+function canChangeMyZone(info) {
+    return validMyZone(info) > 0 && !(info && info.quietNightModeIsRunning);
+}
+
+// MyZone runs off the zone's sensor, so only zones with a working one qualify.
+function myZoneCandidates(zones) {
+    return zones.filter(function (z) { return z.hasSensor && !z.sensorError; });
+}
+
+// Commands to make zone `n` the MyZone, in order. Like the app, a closed zone
+// is opened in a second request once the switch is made.
+function myZoneCommands(ac, n) {
+    var commands = [{ info: { myZone: n } }];
+    var z = ac.zones && ac.zones[zoneKey(n)];
+    if (z && z.state !== "open") {
+        var zones = {};
+        zones[zoneKey(n)] = { state: "open" };
+        commands.push({ zones: zones });
+    }
+    return commands;
+}
+
 function sortedZones(ac) {
     var zones = ac.zones || {};
     return Object.keys(zones).sort().map(function (k) {

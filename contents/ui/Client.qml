@@ -52,20 +52,21 @@ Item {
     }
 
     // Applies `payload` (e.g. {info: {mode: "heat"}}) to the shown state now
-    // and sends it, after `delay` ms if more edits may follow.
-    function command(payload, delay) {
+    // and sends it, after `delay` ms if more edits may follow. An `alone`
+    // command goes in its own request, in order, never merged with others.
+    function command(payload, delay, alone) {
         const until = clock() + pendingMs;
         const pending = Object.assign({}, _pending);
         for (const path of MyPlace.leafPaths(payload, ""))
             pending[path] = { value: MyPlace.getPath(payload, path), expires: until };
         _pending = pending;
         _rebuild();
-        if (delay > 0) {
+        if (delay > 0 && !alone) {
             _staged = MyPlace.deepMerge(_staged || {}, payload);
             debounce.interval = delay;
             debounce.restart();
         } else {
-            _queue.push(payload);
+            _queue.push({ payload: payload, alone: Boolean(alone) });
             _pump();
         }
     }
@@ -77,7 +78,7 @@ Item {
     function _flushStaged() {
         if (!_staged)
             return;
-        _queue.push(_staged);
+        _queue.push({ payload: _staged, alone: false });
         _staged = null;
         _pump();
     }
@@ -85,10 +86,12 @@ Item {
     function _pump() {
         if (_busy || _queue.length === 0)
             return;
-        // Everything queued targets the same aircon, so it can go as one request.
-        const payload = {};
-        while (_queue.length)
-            MyPlace.deepMerge(payload, _queue.shift());
+        // Queued edits target the same aircon, so consecutive ones can go as
+        // one request; `alone` commands keep their own request and order.
+        const first = _queue.shift();
+        const payload = MyPlace.clone(first.payload);
+        while (!first.alone && _queue.length && !_queue[0].alone)
+            MyPlace.deepMerge(payload, _queue.shift().payload);
         const url = MyPlace.setAirconUrl(host, acKey, payload);
         if (!url)
             return;

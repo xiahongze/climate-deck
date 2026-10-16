@@ -86,4 +86,16 @@ TestCase {
         compare(MyPlace.getPath(o, "zones.z01.state"), "open");
         compare(MyPlace.getPath(o, "zones.z09.state"), undefined);
     }
+
+    function test_myzone_rules() {
+        verify(MyPlace.canChangeMyZone({ myZone: 4 }));
+        verify(!MyPlace.canChangeMyZone({ myZone: 0 }));
+        verify(!MyPlace.canChangeMyZone({ myZone: 4, quietNightModeIsRunning: true }));
+        const zones = [{ key: "z01", hasSensor: true, sensorError: false }, { key: "z02", hasSensor: false, sensorError: false },
+                       { key: "z03", hasSensor: true, sensorError: true }];
+        compare(MyPlace.myZoneCandidates(zones).map(z => z.key).join(), "z01");
+        const ac = { info: { myZone: 4 }, zones: { z01: { state: "close" }, z05: { state: "open" } } };
+        compare(JSON.stringify(MyPlace.myZoneCommands(ac, 1)), '[{"info":{"myZone":1}},{"zones":{"z01":{"state":"open"}}}]');
+        compare(JSON.stringify(MyPlace.myZoneCommands(ac, 5)), '[{"info":{"myZone":5}}]');
+    }
 }

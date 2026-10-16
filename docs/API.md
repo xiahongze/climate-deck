@@ -258,6 +258,21 @@ otherwise        →  {"ac1":{"info":{"setTemp":T}}}
 
 Show the same value as the target: the MyZone zone's `setTemp`, or else `info.setTemp`. When `info.setTemp` is sent while a MyZone is set, the tablet also copies it into that zone, but that part of the decompiled code is garbled. **Code/Inferred**
 
+### Changing MyZone
+
+MyZone is the zone whose sensor the unit works to. The app does this (**Code**, `aircon/r.java`, `jsondata/c.java` `setAirconMyZoneZoneNumber`):
+
+1. It sends `{"ac1":{"info":{"myZone":N}}}` on its own.
+2. If zone N is closed, it then sends `{"ac1":{"zones":{"zNN":{"state":"open"}}}}` as a second request.
+
+The app only offers the change when:
+- the system is already in MyZone mode (`info.myZone` is 1–10). It never sets `myZone` back to 0 from the zone screen.
+- Quiet Night mode isn't running. If it is, the app first asks to exit it.
+
+The tablet doesn't validate `myZone` against the zones, so a client should only pick zones with a working sensor (`type` ≠ 0, `error` 0). After the switch, the target temperature is the new MyZone zone's `setTemp`.
+
+Zone `setTemp` and `value` can be changed while a zone is closed. The app allows it, and the value applies when the zone opens.
+
 ### Replies
 
 **Verified**

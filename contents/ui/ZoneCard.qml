@@ -124,14 +124,13 @@ Rectangle {
             Item { Layout.fillWidth: true }
         }
 
-        // Target or damper, depending on whether the zone has a sensor.
-        Item {
+        // Target or damper, depending on whether the zone has a sensor. Like
+        // the app, a closed zone's setting can still be changed.
+        RowLayout {
             Layout.fillWidth: true
-            implicitHeight: stepper.implicitHeight
             Stepper {
                 id: stepper
-                anchors.left: parent.left
-                visible: card.open
+                opacity: card.open ? 1 : 0.7
                 ink: card.colors.ink
                 accent: card.accent
                 textSize: Kirigami.Units.gridUnit * 0.72
@@ -142,8 +141,8 @@ Rectangle {
                 onDecrease: card.stepped(-1)
                 onIncrease: card.stepped(1)
             }
+            Item { Layout.fillWidth: true }
             Controls.Label {
-                anchors.verticalCenter: parent.verticalCenter
                 visible: !card.open
                 text: i18n("Closed")
                 color: card.colors.muted

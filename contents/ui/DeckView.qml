@@ -28,6 +28,8 @@ Item {
     readonly property bool canControl: client.online && ac !== null
     readonly property real target: ac ? MyPlace.targetTemp(ac) : NaN
     readonly property int openCount: zones.filter(z => z.open).length
+    readonly property bool canChangeMyZone: canControl && MyPlace.canChangeMyZone(info)
+    readonly property var myZoneChoices: MyPlace.myZoneCandidates(zones)
 
     readonly property bool forcedDark: themeMode === "dark"
     readonly property bool forcedLight: themeMode === "light"
@@ -101,6 +103,13 @@ Item {
         else
             zones[zone.key] = { value: MyPlace.clampDamper(zone.value + direction * MyPlace.DAMPER_STEP) };
         client.command({ zones: zones }, client.debounceMs);
+    }
+
+    function setMyZone(zone) {
+        if (zone.isMyZone || !canChangeMyZone)
+            return;
+        for (const cmd of MyPlace.myZoneCommands(ac, zone.number))
+            client.command(cmd, 0, true);
     }
 
     function toggleZone(zone) {
@@ -283,14 +292,57 @@ Item {
                         onDecrease: root.setTarget(-1)
                         onIncrease: root.setTarget(1)
                     }
-                    Controls.Label {
+                    RowLayout {
                         Layout.alignment: Qt.AlignRight
-                        readonly property var myZone: root.zones.find(z => z.isMyZone)
-                        text: (root.unitOn ? i18n("%1 TO", root.modeLabel(root.info.mode).toUpperCase()) : i18n("TARGET"))
-                            + (myZone ? "  ·  " + myZone.name.toUpperCase() : "")
-                        color: root.unitOn ? root.accent : root.colors.muted
-                        font.pixelSize: Kirigami.Units.gridUnit * 0.52
-                        font.letterSpacing: 1.2
+                        spacing: 2
+                        Controls.Label {
+                            text: root.unitOn ? i18n("%1 TO", root.modeLabel(root.info.mode).toUpperCase()) : i18n("TARGET")
+                            color: root.unitOn ? root.accent : root.colors.muted
+                            font.pixelSize: Kirigami.Units.gridUnit * 0.52
+                            font.letterSpacing: 1.2
+                        }
+                        // MyZone picker: which zone's sensor the unit works to.
+                        Rectangle {
+                            id: myZoneChip
+                            objectName: "myZoneChip"
+                            readonly property var myZone: root.zones.find(z => z.isMyZone)
+                            readonly property bool live: root.canChangeMyZone
+                            visible: myZone !== undefined
+                            implicitWidth: myZoneText.implicitWidth + 10
+                            implicitHeight: myZoneText.implicitHeight + 4
+                            radius: height / 2
+                            color: chipHover.hovered && live ? Qt.alpha(root.colors.ink, 0.12) : "transparent"
+                            Controls.Label {
+                                id: myZoneText
+                                anchors.centerIn: parent
+                                text: myZoneChip.myZone ? myZoneChip.myZone.name.toUpperCase() + (myZoneChip.live ? "  ▾" : "") : ""
+                                color: root.unitOn ? root.accent : root.colors.muted
+                                font.pixelSize: Kirigami.Units.gridUnit * 0.52
+                                font.weight: Font.DemiBold
+                                font.letterSpacing: 1.2
+                            }
+                            HoverHandler { id: chipHover; cursorShape: myZoneChip.live ? Qt.PointingHandCursor : Qt.ArrowCursor }
+                            TapHandler { enabled: myZoneChip.live; onTapped: myZoneMenu.popup(myZoneChip, 0, myZoneChip.height) }
+                            Controls.ToolTip.visible: chipHover.hovered
+                            Controls.ToolTip.text: root.info.quietNightModeIsRunning
+                                ? i18n("MyZone can't be changed while Quiet Night mode runs")
+                                : i18n("MyZone: the zone whose sensor the aircon works to. Click to change.")
+                            Controls.Menu {
+                                id: myZoneMenu
+                                Instantiator {
+                                    model: root.myZoneChoices
+                                    delegate: Controls.MenuItem {
+                                        required property var modelData
+                                        text: modelData.name + "  ·  " + MyPlace.formatTemp(modelData.measuredTemp, 1) + (modelData.open ? "" : "  " + i18n("(opens it)"))
+                                        checkable: true
+                                        checked: modelData.isMyZone
+                                        onTriggered: root.setMyZone(modelData)
+                                    }
+                                    onObjectAdded: (index, object) => myZoneMenu.insertItem(index, object)
+                                    onObjectRemoved: (index, object) => myZoneMenu.removeItem(object)
+                                }
+                            }
+                        }
                     }
                 }
             }

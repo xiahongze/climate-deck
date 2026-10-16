@@ -148,4 +148,23 @@ TestCase {
         compare(client.history.z01.length, 2);
         compare(client.history.house.length, 2);
     }
+
+    function test_alone_commands_keep_order_and_requests() {
+        tablet.hold = true;
+        client.poll(); // occupies the lane, so everything below queues
+        client.command({ info: { fan: "high" } }, 0);
+        client.command({ info: { myZone: 1 } }, 0, true);
+        client.command({ zones: { z01: { state: "open" } } }, 0, true);
+        client.command({ info: { mode: "heat" } }, 0);
+        client.command({ info: { state: "on" } }, 0);
+        compare(client.aircon.info.myZone, 1);
+        for (let i = 0; i < 6; i++)
+            tablet.release();
+        compare(JSON.stringify(tablet.commands()), JSON.stringify([
+            { ac1: { info: { fan: "high" } } },
+            { ac1: { info: { myZone: 1 } } },
+            { ac1: { zones: { z01: { state: "open" } } } },
+            { ac1: { info: { mode: "heat", state: "on" } } }
+        ]));
+    }
 }
