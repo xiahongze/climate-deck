@@ -27,6 +27,7 @@ PlasmoidItem {
         host: Plasmoid.configuration.host
         acKey: Plasmoid.configuration.airconKey
         pollSeconds: Plasmoid.configuration.pollSeconds
+        store: HistoryStore {}
     }
 
     // Panels get a compact reading; the widget is designed for the desktop.

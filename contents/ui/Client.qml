@@ -32,7 +32,10 @@ Item {
     readonly property bool online: lastUpdated > 0 && failures < offlineAfter
     readonly property bool stale: lastUpdated > 0 && failures > 0
     property string lastError: ""
+    // {series: [{t, v}]}; "house" is the inside average.
     property var history: ({})
+    // Optional persistence: {load(scope, since), append(scope, t, values, before)}.
+    property var store: null
 
     signal commandFailed(string reason)
 
@@ -158,6 +161,13 @@ Item {
         view = v;
     }
 
+    readonly property double historyWindowMs: historySeconds * historyLength * 1000
+    // A trace breaks where samples are further apart than this.
+    readonly property double historyGapMs: Math.max(historySeconds, pollSeconds) * 3000
+    readonly property string historyScope: MyPlace.baseUrl(host) + "/" + acKey
+
+    // One sample per series every `historySeconds`, as {t, v}, kept for
+    // `historyLength` intervals and mirrored to `store` when one is set.
     function _record() {
         const now = clock();
         if (_lastSample > 0 && now - _lastSample < historySeconds * 1000)
@@ -165,21 +175,43 @@ Item {
         const ac = snapshot.aircons[acKey];
         if (!ac)
             return;
+        // Aligned to the interval so restarts and other widgets reuse the slot.
+        const t = Math.floor(now / (historySeconds * 1000)) * historySeconds * 1000;
         _lastSample = now;
-        const next = {};
-        const push = (key, value) => {
-            const series = (history[key] || []).concat([value]);
-            next[key] = series.slice(Math.max(0, series.length - historyLength));
-        };
+        const values = {};
         const zones = MyPlace.sortedZones(ac);
         for (const z of zones) {
             if (z.hasSensor && !z.sensorError)
-                push(z.key, z.measuredTemp);
+                values[z.key] = z.measuredTemp;
         }
         const house = MyPlace.houseStats(zones);
         if (house.count > 0)
-            push("house", house.average);
+            values.house = Math.round(house.average * 100) / 100;
+        const cutoff = t - historyWindowMs;
+        const next = {};
+        for (const key in history) {
+            const kept = history[key].filter(p => p.t > cutoff && p.t !== t);
+            if (kept.length)
+                next[key] = kept;
+        }
+        for (const key in values)
+            next[key] = (next[key] || []).concat([{ t: t, v: values[key] }]);
         history = next;
+        if (store)
+            store.append(historyScope, t, values, cutoff);
+    }
+
+    function _loadHistory() {
+        history = {};
+        _lastSample = 0;
+        if (!store || !configured)
+            return;
+        const loaded = store.load(historyScope, clock() - historyWindowMs);
+        let last = 0;
+        for (const key in loaded)
+            last = Math.max(last, loaded[key][loaded[key].length - 1].t);
+        history = loaded;
+        _lastSample = last;
     }
 
     function defaultTransport(url, timeout, done) {
@@ -245,11 +277,14 @@ Item {
         view = null;
         lastUpdated = 0;
         failures = 0;
-        history = {};
-        _lastSample = 0;
         _pending = {};
+        _loadHistory();
         if (configured && active)
             pollTimer.restart();
     }
-    onAcKeyChanged: _rebuild()
+    onAcKeyChanged: {
+        _loadHistory();
+        _rebuild();
+    }
+    onStoreChanged: _loadHistory()
 }

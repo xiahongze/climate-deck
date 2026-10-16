@@ -29,7 +29,7 @@ While the unit runs, the deck takes on the mode's colour:
 
 Changes show immediately. Taps on − and + are batched into one command, and the widget re-reads the tablet a moment later to confirm. If the tablet stops answering, the last reading stays on screen, dimmed, and the controls lock until it is back.
 
-History is kept in memory: one sample a minute, four hours in total. It starts again when Plasma restarts.
+History is one sample a minute, kept for four hours. It is saved in Plasma's local storage (SQLite, under `~/.local/share/plasmashell/QML/OfflineStorage/`), so it survives Plasma restarts and reboots. Time the PC was off shows as a break in the line.
 
 ## Requirements
 

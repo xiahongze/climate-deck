@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Temperature history is saved to local storage and survives restarts; gaps show as breaks in the trace.
 - MyZone picker under the target temperature; a closed zone is opened when chosen, as in the app.
 - Zone targets and dampers can be changed while the zone is closed.
 

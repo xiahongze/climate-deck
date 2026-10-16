@@ -352,6 +352,8 @@ Item {
                 Layout.preferredHeight: Kirigami.Units.gridUnit * 1.6
                 visible: root.showSparklines && (root.client.history.house || []).length > 1
                 points: root.client.history.house || []
+                windowMs: root.client.historyWindowMs
+                gapMs: root.client.historyGapMs
                 color: root.tempColor(root.house.average)
                 opacity: 0.8
             }
@@ -470,6 +472,8 @@ Item {
                         unitOn: root.unitOn
                         interactive: root.canControl
                         showSparkline: root.showSparklines
+                        windowMs: root.client.historyWindowMs
+                        gapMs: root.client.historyGapMs
                         onToggled: root.toggleZone(modelData)
                         onStepped: direction => root.stepZone(modelData, direction)
                     }

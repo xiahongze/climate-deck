@@ -13,6 +13,8 @@ Rectangle {
     property bool unitOn: false
     property bool interactive: true
     property bool showSparkline: true
+    property double windowMs: 4 * 3600 * 1000
+    property double gapMs: 5 * 60 * 1000
     signal toggled()
     signal stepped(int direction)
 
@@ -156,6 +158,8 @@ Rectangle {
             Layout.preferredHeight: Kirigami.Units.gridUnit * 1.1
             visible: card.showSparkline && card.hasSensor
             points: card.series
+            windowMs: card.windowMs
+            gapMs: card.gapMs
             color: card.tempColor
             opacity: 0.85
         }
