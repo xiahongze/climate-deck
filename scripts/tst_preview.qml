@@ -95,6 +95,18 @@ TestCase {
         client.poll();
         deck.themeMode = "dark";
         save("climate-deck-heating");
+
+        // Scenes page, with the morning warm-up on a timer.
+        ac.info.state = "off";
+        tablet.system.myScenes.scenes.s10002.timerEnabled = true;
+        client.poll();
+        deck.page = 1;
+        save("climate-deck-scenes");
+        const scenes = findChild(deck, "scenesPage");
+        scenes.startEdit(scenes.scenes[1]);
+        save("climate-deck-scene-editor");
+        scenes.closeEditor();
+        deck.page = 0;
     }
 
     function save(name) {

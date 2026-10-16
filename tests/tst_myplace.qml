@@ -98,4 +98,51 @@ TestCase {
         compare(JSON.stringify(MyPlace.myZoneCommands(ac, 1)), '[{"info":{"myZone":1}},{"zones":{"z01":{"state":"open"}}}]');
         compare(JSON.stringify(MyPlace.myZoneCommands(ac, 5)), '[{"info":{"myZone":5}}]');
     }
+
+    function test_scene_helpers() {
+        compare(MyPlace.formatMinutes(285), "04:45");
+        compare(MyPlace.formatMinutes(1439), "23:59");
+        compare(MyPlace.stepMinutes(285, 1, 15), 300);
+        compare(MyPlace.stepMinutes(0, -1, 15), 1425);
+        compare(MyPlace.stepMinutes(1430, 1, 15), 0);
+        compare(MyPlace.stepMinutes(17, 1, 15), 30);
+        compare(MyPlace.stepMinutes(17, -1, 15), 15);
+        const names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        const words = { everyDay: "Every day", weekdays: "Weekdays", weekends: "Weekends", noDays: "No days" };
+        compare(MyPlace.daysLabel(127, names, words), "Every day");
+        compare(MyPlace.daysLabel(62, names, words), "Weekdays");
+        compare(MyPlace.daysLabel(65, names, words), "Weekends");
+        compare(MyPlace.daysLabel(2 | 8 | 1, names, words), "Mon, Wed, Sun");
+        verify(MyPlace.validSceneName("Morning"));
+        verify(!MyPlace.validSceneName("   "));
+        verify(!MyPlace.validSceneName("Thirteen chrs"));
+        compare(MyPlace.commandUrl("10.0.0.2", "runScene", { id: "s10001" }),
+                "http://10.0.0.2:2025/runScene?json=" + encodeURIComponent('{"id":"s10001"}'));
+    }
+
+    function test_scene_ids_and_order() {
+        const view = { myScenes: { scenesOrder: ["s10002", "s10001"], scenes: {
+            s10001: { id: "s10001" }, s10002: { id: "s10002" }, s10004: { id: "s10004" } } } };
+        compare(MyPlace.sceneList(view).map(s => s.id).join(), "s10002,s10001,s10004");
+        compare(MyPlace.nextSceneId(view), "s10003");
+        const full = { myScenes: { scenes: {} } };
+        for (let n = 1; n <= 12; n++)
+            full.myScenes.scenes["s1" + ("000" + n).slice(-4)] = {};
+        compare(MyPlace.nextSceneId(full), "");
+    }
+
+    function test_scene_draft_and_payload() {
+        const ac = { info: { uid: "u", name: "AC", state: "off", mode: "cool", fan: "low", setTemp: 28, myZone: 4, freshAirStatus: "none" },
+                     zones: { z04: { number: 4, state: "open", value: 100, setTemp: 24, motionConfig: 1, measuredTemp: 20, rssi: 40 } } };
+        const d = MyPlace.draftFromCurrent("s10004", "Weekend", ac, "ac1");
+        compare(d.aircons.ac1.info.state, "on");
+        compare(d.aircons.ac1.zones.z04.measuredTemp, undefined);
+        const p = MyPlace.scenePayload(d, "ac1");
+        compare(p.id, "s10004");
+        compare(p.name, "Weekend");
+        compare(p.timerEnabled, false);
+        compare(p.aircons.ac1.info.uid, "u");
+        compare(p.aircons.ac1.zones.z04.setTemp, 24);
+        compare(p.lights, undefined); // only what we manage
+    }
 }

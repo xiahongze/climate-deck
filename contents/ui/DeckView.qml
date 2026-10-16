@@ -17,6 +17,11 @@ Item {
     property var clockSource: function() { return Date.now(); }
     property double now: clockSource()
     signal configureRequested()
+    // 0 = climate, 1 = scenes.
+    property int page: 0
+    readonly property var dayNames: [i18n("Mon"), i18n("Tue"), i18n("Wed"), i18n("Thu"), i18n("Fri"), i18n("Sat"), i18n("Sun")]
+    readonly property var dayLetters: [i18n("M"), i18n("T"), i18n("W"), i18n("T"), i18n("F"), i18n("S"), i18n("S")]
+    readonly property var dayWords: ({ everyDay: i18n("Every day"), weekdays: i18n("Weekdays"), weekends: i18n("Weekends"), noDays: i18n("No days") })
 
     readonly property var ac: client.aircon
     readonly property var info: ac ? ac.info : ({})
@@ -112,6 +117,13 @@ Item {
             client.command(cmd, 0, true);
     }
 
+    // A short message over the footer; errors show in red.
+    function notify(message, isError) {
+        toast.message = message;
+        toast.isError = isError;
+        toastTimer.restart();
+    }
+
     function toggleZone(zone) {
         const zones = {};
         zones[zone.key] = { state: zone.open ? "close" : "open" };
@@ -156,13 +168,52 @@ Item {
             Layout.fillWidth: true
             spacing: Kirigami.Units.smallSpacing
             Controls.Label {
-                text: (root.system.name || i18n("Climate")).toUpperCase() + (root.info.name ? "  ·  " + root.info.name.toUpperCase() : "")
+                visible: root.ac === null
+                text: (root.system.name || i18n("Climate")).toUpperCase()
                 color: root.colors.muted
                 font.pixelSize: Kirigami.Units.gridUnit * 0.6
                 font.weight: Font.DemiBold
                 font.letterSpacing: 1.4
                 elide: Text.ElideRight
                 Layout.fillWidth: true
+            }
+            // Page tabs.
+            RowLayout {
+                visible: root.ac !== null
+                Layout.fillWidth: true
+                spacing: Kirigami.Units.largeSpacing
+                Repeater {
+                    model: [i18n("CLIMATE"), i18n("SCENES")]
+                    delegate: Item {
+                        id: tab
+                        required property string modelData
+                        required property int index
+                        readonly property bool active: root.page === index
+                        objectName: "tab" + index
+                        implicitWidth: tabLabel.implicitWidth
+                        implicitHeight: tabLabel.implicitHeight + 6
+                        Controls.Label {
+                            id: tabLabel
+                            text: tab.modelData
+                            color: tab.active ? root.colors.ink : tabHover.hovered ? Qt.alpha(root.colors.ink, 0.8) : root.colors.muted
+                            font.pixelSize: Kirigami.Units.gridUnit * 0.6
+                            font.weight: Font.DemiBold
+                            font.letterSpacing: 1.4
+                        }
+                        Rectangle {
+                            anchors.bottom: parent.bottom
+                            width: tab.active ? parent.width : 0
+                            height: 2
+                            radius: 1
+                            color: root.unitOn ? root.accent : root.colors.ink
+                            opacity: 0.85
+                            Behavior on width { NumberAnimation { duration: Kirigami.Units.shortDuration; easing.type: Easing.OutCubic } }
+                        }
+                        HoverHandler { id: tabHover; cursorShape: Qt.PointingHandCursor }
+                        TapHandler { onTapped: root.page = tab.index }
+                    }
+                }
+                Item { Layout.fillWidth: true }
             }
             Rectangle {
                 id: statusPill
@@ -246,293 +297,304 @@ Item {
         }
 
         // Everything below needs data; it dims rather than blanks when offline.
-        ColumnLayout {
+        StackLayout {
             visible: root.ac !== null
             Layout.fillWidth: true
-            spacing: Kirigami.Units.largeSpacing
+            Layout.fillHeight: true
+            currentIndex: root.page
             opacity: root.client.online ? 1 : 0.55
             Behavior on opacity { NumberAnimation { duration: Kirigami.Units.longDuration } }
 
-            // Hero: inside temperature and the unit target.
-            RowLayout {
-                Layout.fillWidth: true
+            ColumnLayout {
                 spacing: Kirigami.Units.largeSpacing
 
-                ColumnLayout {
-                    spacing: 0
-                    Controls.Label {
-                        text: MyPlace.formatTemp(root.house.average, 1)
-                        color: root.colors.ink
-                        font.pixelSize: Kirigami.Units.gridUnit * 3
-                        font.weight: Font.Light
-                        font.features: { "tnum": 1 }
-                    }
-                    Controls.Label {
-                        text: root.house.count > 1
-                            ? i18n("INSIDE  %1 – %2", MyPlace.formatTemp(root.house.min, 1), MyPlace.formatTemp(root.house.max, 1))
-                            : i18n("INSIDE")
-                        color: root.colors.muted
-                        font.pixelSize: Kirigami.Units.gridUnit * 0.52
-                        font.letterSpacing: 1.2
-                    }
-                }
-                Item { Layout.fillWidth: true }
-                ColumnLayout {
-                    spacing: 2
-                    Layout.alignment: Qt.AlignVCenter
-                    Stepper {
-                        Layout.alignment: Qt.AlignRight
-                        text: MyPlace.formatTemp(root.target, 0)
-                        ink: root.colors.ink
-                        accent: root.accent
-                        textSize: Kirigami.Units.gridUnit * 1.5
-                        interactive: root.canControl
-                        canDecrease: root.target > MyPlace.MIN_TEMP
-                        canIncrease: root.target < MyPlace.MAX_TEMP
-                        onDecrease: root.setTarget(-1)
-                        onIncrease: root.setTarget(1)
-                    }
-                    RowLayout {
-                        Layout.alignment: Qt.AlignRight
-                        spacing: 2
+                // Hero: inside temperature and the unit target.
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.largeSpacing
+
+                    ColumnLayout {
+                        spacing: 0
                         Controls.Label {
-                            text: root.unitOn ? i18n("%1 TO", root.modeLabel(root.info.mode).toUpperCase()) : i18n("TARGET")
-                            color: root.unitOn ? root.accent : root.colors.muted
+                            text: MyPlace.formatTemp(root.house.average, 1)
+                            color: root.colors.ink
+                            font.pixelSize: Kirigami.Units.gridUnit * 3
+                            font.weight: Font.Light
+                            font.features: { "tnum": 1 }
+                        }
+                        Controls.Label {
+                            text: root.house.count > 1
+                                ? i18n("INSIDE  %1 – %2", MyPlace.formatTemp(root.house.min, 1), MyPlace.formatTemp(root.house.max, 1))
+                                : i18n("INSIDE")
+                            color: root.colors.muted
                             font.pixelSize: Kirigami.Units.gridUnit * 0.52
                             font.letterSpacing: 1.2
                         }
-                        // MyZone picker: which zone's sensor the unit works to.
-                        Rectangle {
-                            id: myZoneChip
-                            objectName: "myZoneChip"
-                            readonly property var myZone: root.zones.find(z => z.isMyZone)
-                            readonly property bool live: root.canChangeMyZone
-                            visible: myZone !== undefined
-                            implicitWidth: myZoneText.implicitWidth + 10
-                            implicitHeight: myZoneText.implicitHeight + 4
-                            radius: height / 2
-                            color: chipHover.hovered && live ? Qt.alpha(root.colors.ink, 0.12) : "transparent"
+                    }
+                    Item { Layout.fillWidth: true }
+                    ColumnLayout {
+                        spacing: 2
+                        Layout.alignment: Qt.AlignVCenter
+                        Stepper {
+                            Layout.alignment: Qt.AlignRight
+                            text: MyPlace.formatTemp(root.target, 0)
+                            ink: root.colors.ink
+                            accent: root.accent
+                            textSize: Kirigami.Units.gridUnit * 1.5
+                            interactive: root.canControl
+                            canDecrease: root.target > MyPlace.MIN_TEMP
+                            canIncrease: root.target < MyPlace.MAX_TEMP
+                            onDecrease: root.setTarget(-1)
+                            onIncrease: root.setTarget(1)
+                        }
+                        RowLayout {
+                            Layout.alignment: Qt.AlignRight
+                            spacing: 2
                             Controls.Label {
-                                id: myZoneText
-                                anchors.centerIn: parent
-                                text: myZoneChip.myZone ? myZoneChip.myZone.name.toUpperCase() + (myZoneChip.live ? "  ▾" : "") : ""
+                                text: root.unitOn ? i18n("%1 TO", root.modeLabel(root.info.mode).toUpperCase()) : i18n("TARGET")
                                 color: root.unitOn ? root.accent : root.colors.muted
                                 font.pixelSize: Kirigami.Units.gridUnit * 0.52
-                                font.weight: Font.DemiBold
                                 font.letterSpacing: 1.2
                             }
-                            HoverHandler { id: chipHover; cursorShape: myZoneChip.live ? Qt.PointingHandCursor : Qt.ArrowCursor }
-                            TapHandler { enabled: myZoneChip.live; onTapped: myZoneMenu.popup(myZoneChip, 0, myZoneChip.height) }
-                            Controls.ToolTip.visible: chipHover.hovered
-                            Controls.ToolTip.text: root.info.quietNightModeIsRunning
-                                ? i18n("MyZone can't be changed while Quiet Night mode runs")
-                                : i18n("MyZone: the zone whose sensor the aircon works to. Click to change.")
-                            Controls.Menu {
-                                id: myZoneMenu
-                                Instantiator {
-                                    model: root.myZoneChoices
-                                    delegate: Controls.MenuItem {
-                                        required property var modelData
-                                        text: modelData.name + "  ·  " + MyPlace.formatTemp(modelData.measuredTemp, 1) + (modelData.open ? "" : "  " + i18n("(opens it)"))
-                                        checkable: true
-                                        checked: modelData.isMyZone
-                                        onTriggered: root.setMyZone(modelData)
+                            // MyZone picker: which zone's sensor the unit works to.
+                            Rectangle {
+                                id: myZoneChip
+                                objectName: "myZoneChip"
+                                readonly property var myZone: root.zones.find(z => z.isMyZone)
+                                readonly property bool live: root.canChangeMyZone
+                                visible: myZone !== undefined
+                                implicitWidth: myZoneText.implicitWidth + 10
+                                implicitHeight: myZoneText.implicitHeight + 4
+                                radius: height / 2
+                                color: chipHover.hovered && live ? Qt.alpha(root.colors.ink, 0.12) : "transparent"
+                                Controls.Label {
+                                    id: myZoneText
+                                    anchors.centerIn: parent
+                                    text: myZoneChip.myZone ? myZoneChip.myZone.name.toUpperCase() + (myZoneChip.live ? "  ▾" : "") : ""
+                                    color: root.unitOn ? root.accent : root.colors.muted
+                                    font.pixelSize: Kirigami.Units.gridUnit * 0.52
+                                    font.weight: Font.DemiBold
+                                    font.letterSpacing: 1.2
+                                }
+                                HoverHandler { id: chipHover; cursorShape: myZoneChip.live ? Qt.PointingHandCursor : Qt.ArrowCursor }
+                                TapHandler { enabled: myZoneChip.live; onTapped: myZoneMenu.popup(myZoneChip, 0, myZoneChip.height) }
+                                Controls.ToolTip.visible: chipHover.hovered
+                                Controls.ToolTip.text: root.info.quietNightModeIsRunning
+                                    ? i18n("MyZone can't be changed while Quiet Night mode runs")
+                                    : i18n("MyZone: the zone whose sensor the aircon works to. Click to change.")
+                                Controls.Menu {
+                                    id: myZoneMenu
+                                    Instantiator {
+                                        model: root.myZoneChoices
+                                        delegate: Controls.MenuItem {
+                                            required property var modelData
+                                            text: modelData.name + "  ·  " + MyPlace.formatTemp(modelData.measuredTemp, 1) + (modelData.open ? "" : "  " + i18n("(opens it)"))
+                                            checkable: true
+                                            checked: modelData.isMyZone
+                                            onTriggered: root.setMyZone(modelData)
+                                        }
+                                        onObjectAdded: (index, object) => myZoneMenu.insertItem(index, object)
+                                        onObjectRemoved: (index, object) => myZoneMenu.removeItem(object)
                                     }
-                                    onObjectAdded: (index, object) => myZoneMenu.insertItem(index, object)
-                                    onObjectRemoved: (index, object) => myZoneMenu.removeItem(object)
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            Sparkline {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Kirigami.Units.gridUnit * 1.6
-                visible: root.showSparklines && (root.client.history.house || []).length > 1
-                points: root.client.history.house || []
-                windowMs: root.client.historyWindowMs
-                gapMs: root.client.historyGapMs
-                color: root.tempColor(root.house.average)
-                opacity: 0.8
-            }
+                Sparkline {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Kirigami.Units.gridUnit * 1.6
+                    visible: root.showSparklines && (root.client.history.house || []).length > 1
+                    points: root.client.history.house || []
+                    windowMs: root.client.historyWindowMs
+                    gapMs: root.client.historyGapMs
+                    color: root.tempColor(root.house.average)
+                    opacity: 0.8
+                }
 
-            // Power beside the stacked mode and fan selectors.
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: Kirigami.Units.largeSpacing
+                // Power beside the stacked mode and fan selectors.
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.largeSpacing
 
-                Rectangle {
-                    id: power
-                    objectName: "powerButton"
-                    readonly property color glyph: root.unitOn ? "white" : root.colors.ink
-                    implicitWidth: selectors.implicitHeight
-                    implicitHeight: implicitWidth
-                    radius: width / 2
-                    color: root.unitOn ? root.accent : Qt.alpha(root.colors.ink, powerHover.hovered && root.canControl ? 0.14 : 0.07)
-                    border.color: root.unitOn ? Qt.lighter(root.accent, 1.25) : Qt.alpha(root.colors.ink, 0.12)
-                    opacity: root.canControl ? 1 : 0.6
-                    scale: powerTap.pressed ? 0.94 : 1
-                    Behavior on color { ColorAnimation { duration: Kirigami.Units.longDuration } }
-                    Behavior on scale { NumberAnimation { duration: Kirigami.Units.shortDuration } }
-                    // The IEC power symbol, drawn so it never depends on the icon theme.
-                    Canvas {
-                        id: powerGlyph
-                        anchors.centerIn: parent
-                        width: parent.width * 0.4
-                        height: width
-                        property color tint: power.glyph
-                        onTintChanged: requestPaint()
-                        onPaint: {
-                            const ctx = getContext("2d");
-                            ctx.reset();
-                            const r = width / 2 - 2;
-                            ctx.lineWidth = Math.max(2, width / 11);
-                            ctx.lineCap = "round";
-                            ctx.strokeStyle = tint;
-                            ctx.beginPath();
-                            ctx.arc(width / 2, height / 2 + 1, r, -Math.PI / 2 + 0.75, 1.5 * Math.PI - 0.75);
-                            ctx.stroke();
-                            ctx.beginPath();
-                            ctx.moveTo(width / 2, 1);
-                            ctx.lineTo(width / 2, height / 2);
-                            ctx.stroke();
+                    Rectangle {
+                        id: power
+                        objectName: "powerButton"
+                        readonly property color glyph: root.unitOn ? "white" : root.colors.ink
+                        implicitWidth: selectors.implicitHeight
+                        implicitHeight: implicitWidth
+                        radius: width / 2
+                        color: root.unitOn ? root.accent : Qt.alpha(root.colors.ink, powerHover.hovered && root.canControl ? 0.14 : 0.07)
+                        border.color: root.unitOn ? Qt.lighter(root.accent, 1.25) : Qt.alpha(root.colors.ink, 0.12)
+                        opacity: root.canControl ? 1 : 0.6
+                        scale: powerTap.pressed ? 0.94 : 1
+                        Behavior on color { ColorAnimation { duration: Kirigami.Units.longDuration } }
+                        Behavior on scale { NumberAnimation { duration: Kirigami.Units.shortDuration } }
+                        // The IEC power symbol, drawn so it never depends on the icon theme.
+                        Canvas {
+                            id: powerGlyph
+                            anchors.centerIn: parent
+                            width: parent.width * 0.4
+                            height: width
+                            property color tint: power.glyph
+                            onTintChanged: requestPaint()
+                            onPaint: {
+                                const ctx = getContext("2d");
+                                ctx.reset();
+                                const r = width / 2 - 2;
+                                ctx.lineWidth = Math.max(2, width / 11);
+                                ctx.lineCap = "round";
+                                ctx.strokeStyle = tint;
+                                ctx.beginPath();
+                                ctx.arc(width / 2, height / 2 + 1, r, -Math.PI / 2 + 0.75, 1.5 * Math.PI - 0.75);
+                                ctx.stroke();
+                                ctx.beginPath();
+                                ctx.moveTo(width / 2, 1);
+                                ctx.lineTo(width / 2, height / 2);
+                                ctx.stroke();
+                            }
+                        }
+                        HoverHandler { id: powerHover; cursorShape: root.canControl ? Qt.PointingHandCursor : Qt.ArrowCursor }
+                        TapHandler {
+                            id: powerTap
+                            enabled: root.canControl
+                            onTapped: root.client.command({ info: { state: root.unitOn ? "off" : "on" } }, 0)
+                        }
+                        Controls.ToolTip.visible: powerHover.hovered
+                        Controls.ToolTip.text: root.unitOn ? i18n("Turn the aircon off") : i18n("Turn the aircon on")
+                    }
+
+                    ColumnLayout {
+                        id: selectors
+                        Layout.fillWidth: true
+                        spacing: Kirigami.Units.smallSpacing * 1.5
+                        Segmented {
+                            Layout.fillWidth: true
+                            options: MyPlace.modes(root.info).map(m => ({ value: m, label: root.modeLabel(m) }))
+                            current: root.info.mode || ""
+                            ink: root.colors.ink
+                            accent: root.unitOn ? root.accent : root.colors.neutral
+                            interactive: root.canControl
+                            onPicked: value => root.client.command({ info: { mode: value } }, 0)
+                        }
+                        Segmented {
+                            Layout.fillWidth: true
+                            options: ["low", "medium", "high", MyPlace.autoFan(root.info)].map(f => ({ value: f, label: root.fanLabel(f) }))
+                            current: MyPlace.isAutoFan(root.info.fan) ? MyPlace.autoFan(root.info) : root.info.fan || ""
+                            ink: root.colors.ink
+                            accent: root.unitOn ? root.accent : root.colors.neutral
+                            interactive: root.canControl
+                            onPicked: value => root.client.command({ info: { fan: value } }, 0)
                         }
                     }
-                    HoverHandler { id: powerHover; cursorShape: root.canControl ? Qt.PointingHandCursor : Qt.ArrowCursor }
-                    TapHandler {
-                        id: powerTap
-                        enabled: root.canControl
-                        onTapped: root.client.command({ info: { state: root.unitOn ? "off" : "on" } }, 0)
-                    }
-                    Controls.ToolTip.visible: powerHover.hovered
-                    Controls.ToolTip.text: root.unitOn ? i18n("Turn the aircon off") : i18n("Turn the aircon on")
                 }
 
-                ColumnLayout {
-                    id: selectors
+                RowLayout {
                     Layout.fillWidth: true
-                    spacing: Kirigami.Units.smallSpacing * 1.5
-                    Segmented {
-                        Layout.fillWidth: true
-                        options: MyPlace.modes(root.info).map(m => ({ value: m, label: root.modeLabel(m) }))
-                        current: root.info.mode || ""
-                        ink: root.colors.ink
-                        accent: root.unitOn ? root.accent : root.colors.neutral
-                        interactive: root.canControl
-                        onPicked: value => root.client.command({ info: { mode: value } }, 0)
+                    Layout.topMargin: Kirigami.Units.smallSpacing
+                    Controls.Label {
+                        text: i18n("ZONES")
+                        color: root.colors.muted
+                        font.pixelSize: Kirigami.Units.gridUnit * 0.55
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 1.4
                     }
-                    Segmented {
-                        Layout.fillWidth: true
-                        options: ["low", "medium", "high", MyPlace.autoFan(root.info)].map(f => ({ value: f, label: root.fanLabel(f) }))
-                        current: MyPlace.isAutoFan(root.info.fan) ? MyPlace.autoFan(root.info) : root.info.fan || ""
-                        ink: root.colors.ink
-                        accent: root.unitOn ? root.accent : root.colors.neutral
-                        interactive: root.canControl
-                        onPicked: value => root.client.command({ info: { fan: value } }, 0)
+                    Item { Layout.fillWidth: true }
+                    Controls.Label {
+                        text: i18n("%1 of %2 open", root.openCount, root.zones.length)
+                        color: root.colors.muted
+                        font.pixelSize: Kirigami.Units.gridUnit * 0.55
                     }
                 }
-            }
 
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.topMargin: Kirigami.Units.smallSpacing
-                Controls.Label {
-                    text: i18n("ZONES")
-                    color: root.colors.muted
-                    font.pixelSize: Kirigami.Units.gridUnit * 0.55
-                    font.weight: Font.DemiBold
-                    font.letterSpacing: 1.4
-                }
-                Item { Layout.fillWidth: true }
-                Controls.Label {
-                    text: i18n("%1 of %2 open", root.openCount, root.zones.length)
-                    color: root.colors.muted
-                    font.pixelSize: Kirigami.Units.gridUnit * 0.55
-                }
-            }
-
-            GridLayout {
-                id: grid
-                Layout.fillWidth: true
-                columns: Math.max(2, Math.min(4, Math.floor(width / (Kirigami.Units.gridUnit * 8))))
-                columnSpacing: Kirigami.Units.smallSpacing * 1.5
-                rowSpacing: Kirigami.Units.smallSpacing * 1.5
-                Repeater {
-                    model: root.zones
-                    delegate: ZoneCard {
-                        required property var modelData
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: 1
-                        zone: modelData
-                        series: root.client.history[modelData.key] || []
-                        colors: root.colors
-                        accent: root.unitOn ? root.accent : root.colors.neutral
-                        unitOn: root.unitOn
-                        interactive: root.canControl
-                        showSparkline: root.showSparklines
-                        windowMs: root.client.historyWindowMs
-                        gapMs: root.client.historyGapMs
-                        onToggled: root.toggleZone(modelData)
-                        onStepped: direction => root.stepZone(modelData, direction)
+                GridLayout {
+                    id: grid
+                    Layout.fillWidth: true
+                    columns: Math.max(2, Math.min(4, Math.floor(width / (Kirigami.Units.gridUnit * 8))))
+                    columnSpacing: Kirigami.Units.smallSpacing * 1.5
+                    rowSpacing: Kirigami.Units.smallSpacing * 1.5
+                    Repeater {
+                        model: root.zones
+                        delegate: ZoneCard {
+                            required property var modelData
+                            Layout.fillWidth: true
+                            Layout.preferredWidth: 1
+                            zone: modelData
+                            series: root.client.history[modelData.key] || []
+                            colors: root.colors
+                            accent: root.unitOn ? root.accent : root.colors.neutral
+                            unitOn: root.unitOn
+                            interactive: root.canControl
+                            showSparkline: root.showSparklines
+                            windowMs: root.client.historyWindowMs
+                            gapMs: root.client.historyGapMs
+                            onToggled: root.toggleZone(modelData)
+                            onStepped: direction => root.stepZone(modelData, direction)
+                        }
                     }
                 }
+
+                // Footer: freshness and unit alerts.
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.largeSpacing
+                    Controls.Label {
+                        text: i18n("Updated %1", root.ago(root.client.lastUpdated))
+                        color: root.colors.muted
+                        font.pixelSize: Kirigami.Units.gridUnit * 0.52
+                    }
+                    Item { Layout.fillWidth: true }
+                    Controls.Label {
+                        visible: root.info.filterCleanStatus > 0
+                        text: i18n("Clean filter")
+                        color: root.colors.warn
+                        font.pixelSize: Kirigami.Units.gridUnit * 0.52
+                        font.weight: Font.DemiBold
+                    }
+                    Controls.Label {
+                        visible: (root.info.airconErrorCode || "") !== ""
+                        text: i18n("Unit error %1", root.info.airconErrorCode)
+                        color: root.colors.bad
+                        font.pixelSize: Kirigami.Units.gridUnit * 0.52
+                        font.weight: Font.DemiBold
+                    }
+                    Controls.Label {
+                        visible: root.unitOn && root.info.countDownToOff > 0
+                        text: i18n("Off in %1 min", root.info.countDownToOff)
+                        color: root.colors.muted
+                        font.pixelSize: Kirigami.Units.gridUnit * 0.52
+                    }
+                    Controls.Label {
+                        visible: !root.unitOn && root.info.countDownToOn > 0
+                        text: i18n("On in %1 min", root.info.countDownToOn)
+                        color: root.colors.muted
+                        font.pixelSize: Kirigami.Units.gridUnit * 0.52
+                    }
+                }
+                Item { Layout.fillHeight: true }
             }
 
-            // Footer: freshness and unit alerts.
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: Kirigami.Units.largeSpacing
-                Controls.Label {
-                    text: i18n("Updated %1", root.ago(root.client.lastUpdated))
-                    color: root.colors.muted
-                    font.pixelSize: Kirigami.Units.gridUnit * 0.52
-                }
-                Item { Layout.fillWidth: true }
-                Controls.Label {
-                    visible: root.info.filterCleanStatus > 0
-                    text: i18n("Clean filter")
-                    color: root.colors.warn
-                    font.pixelSize: Kirigami.Units.gridUnit * 0.52
-                    font.weight: Font.DemiBold
-                }
-                Controls.Label {
-                    visible: (root.info.airconErrorCode || "") !== ""
-                    text: i18n("Unit error %1", root.info.airconErrorCode)
-                    color: root.colors.bad
-                    font.pixelSize: Kirigami.Units.gridUnit * 0.52
-                    font.weight: Font.DemiBold
-                }
-                Controls.Label {
-                    visible: root.unitOn && root.info.countDownToOff > 0
-                    text: i18n("Off in %1 min", root.info.countDownToOff)
-                    color: root.colors.muted
-                    font.pixelSize: Kirigami.Units.gridUnit * 0.52
-                }
-                Controls.Label {
-                    visible: !root.unitOn && root.info.countDownToOn > 0
-                    text: i18n("On in %1 min", root.info.countDownToOn)
-                    color: root.colors.muted
-                    font.pixelSize: Kirigami.Units.gridUnit * 0.52
-                }
+            ScenesPage {
+                deck: root
             }
         }
 
-        Item { Layout.fillHeight: true }
+        Item { Layout.fillHeight: true; visible: root.ac === null }
     }
 
     // A failed command shows briefly over the footer.
     Rectangle {
         id: toast
         property string message: ""
+        property bool isError: true
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: Kirigami.Units.largeSpacing
         width: Math.min(parent.width - Kirigami.Units.gridUnit * 2, toastLabel.implicitWidth + Kirigami.Units.gridUnit)
         height: toastLabel.implicitHeight + Kirigami.Units.smallSpacing * 2
         radius: height / 2
-        color: Qt.alpha(root.colors.bad, 0.9)
+        color: isError ? Qt.alpha(root.colors.bad, 0.92) : Qt.alpha(root.dark ? "#2a3240" : "#39424e", 0.94)
         opacity: message !== "" ? 1 : 0
         visible: opacity > 0
         Behavior on opacity { NumberAnimation { duration: Kirigami.Units.longDuration } }
@@ -550,8 +612,7 @@ Item {
     Connections {
         target: root.client
         function onCommandFailed(reason) {
-            toast.message = i18n("Command failed: %1", reason);
-            toastTimer.restart();
+            root.notify(i18n("Command failed: %1", reason), true);
         }
     }
 }

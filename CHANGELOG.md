@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Scenes page: run, create, edit and delete scenes, and switch their timers, with days, start and stop times, and the aircon settings each applies.
+- Saves are confirmed from the next poll, so a dropped save (for example past 12 scenes) shows an error.
+- docs/API.md documents scenes, checked against a live system.
+
 ## 0.1.0 — 2026-10-16
 
 - Desktop deck for Advantage Air MyPlace / MyAir over the local network (port 2025), with no cloud.

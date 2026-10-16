@@ -12,6 +12,12 @@ While the unit runs, the deck takes on the mode's colour:
 
 ![Climate Deck heating](docs/screenshots/climate-deck-heating.png)
 
+Scenes have their own page, with an editor for days, times and the aircon settings each scene applies:
+
+| Scenes | Scene editor |
+| --- | --- |
+| ![Scene list](docs/screenshots/climate-deck-scenes.png) | ![Scene editor](docs/screenshots/climate-deck-scene-editor.png) |
+
 ## What it shows
 
 - **Header.** Site and aircon name, link status (`LIVE`, `RETRYING`, `OFFLINE`) and the outdoor temperature when the tablet has a valid reading.
@@ -26,6 +32,14 @@ While the unit runs, the deck takes on the mode's colour:
   - sensor warnings
   - a history sparkline
 - **Footer.** How fresh the data is, unit error codes, the filter-clean reminder and on/off timers.
+- **Scenes** (the second tab). These are the scenes stored on the tablet:
+  - Each card shows the days, the start and stop times, and what the scene sets (mode, target, fan, open zones with ★ for the MyZone).
+  - **Run now** applies a scene at once.
+  - The switch turns its timer on or off (**AUTO** or **MANUAL**).
+  - **Edit** opens the editor, and **Delete** asks for a second click.
+  - **+ New scene** starts from the aircon's current settings.
+  - The editor sets the name, days, start time, an optional turn-off time, power, mode, fan, target, MyZone, and each zone's open/closed state and target.
+  - The Android app only offers this on the wall tablet. The tablet accepts it from any device on your network, and the tablet runs the timers itself.
 
 Changes show immediately. Taps on − and + are batched into one command, and the widget re-reads the tablet a moment later to confirm. If the tablet stops answering, the last reading stays on screen, dimmed, and the controls lock until it is back.
 

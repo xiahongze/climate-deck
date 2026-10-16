@@ -23,6 +23,12 @@ function systemDataUrl(host) {
 }
 
 // One aircon per request: the tablet only reads the first key.
+// Any other command, e.g. setScene / runScene, with one json parameter.
+function commandUrl(host, command, obj) {
+    var b = baseUrl(host);
+    return b ? b + "/" + command + "?json=" + encodeURIComponent(JSON.stringify(obj)) : "";
+}
+
 function setAirconUrl(host, acKey, payload) {
     var b = baseUrl(host);
     if (!b)
@@ -247,4 +253,123 @@ function formatTemp(t, digits) {
     if (!isFinite(t))
         return "–";
     return Number(t).toFixed(digits === undefined ? 1 : digits) + "°";
+}
+
+// ---- Scenes -----------------------------------------------------------------
+// Stored on the tablet under myScenes; see docs/API.md "Scenes".
+
+var MAX_SCENES = 12;
+// activeDays bits: Sunday = 1, Monday = 2 ... Saturday = 64. Listed Monday first.
+var DAY_BITS = [2, 4, 8, 16, 32, 64, 1];
+var EVERY_DAY = 127, WEEKDAYS = 62, WEEKENDS = 65;
+
+function sceneList(view) {
+    var s = view && view.myScenes ? view.myScenes : {};
+    var scenes = s.scenes || {};
+    var order = (s.scenesOrder || []).filter(function (id) { return scenes[id]; });
+    Object.keys(scenes).sort().forEach(function (id) {
+        if (order.indexOf(id) < 0 && /^s1[0-9a-f]{4}$/.test(id))
+            order.push(id);
+    });
+    return order.map(function (id) { return scenes[id]; });
+}
+
+// Clients pick the id; the app uses the first free one of s10001..s10012.
+function nextSceneId(view) {
+    var scenes = view && view.myScenes && view.myScenes.scenes ? view.myScenes.scenes : {};
+    for (var n = 1; n <= MAX_SCENES; n++) {
+        var id = "s1" + ("000" + n).slice(-4);
+        if (!scenes[id])
+            return id;
+    }
+    return "";
+}
+
+function formatMinutes(m) {
+    m = ((Math.round(Number(m) || 0) % 1440) + 1440) % 1440;
+    var h = Math.floor(m / 60), mm = m % 60;
+    return (h < 10 ? "0" : "") + h + ":" + (mm < 10 ? "0" : "") + mm;
+}
+
+// Moves by `step` minutes, snapping to the step grid and wrapping at midnight.
+function stepMinutes(m, direction, step) {
+    step = step || 15;
+    var base = Math.round(Number(m) / step) * step;
+    if (base === Number(m) || (direction > 0 ? base < m : base > m))
+        base += direction * step;
+    return ((base % 1440) + 1440) % 1440;
+}
+
+// dayNames: Monday-first short names, e.g. ["Mon", ..., "Sun"].
+function daysLabel(mask, dayNames, words) {
+    mask = Number(mask) || 0;
+    if (mask === EVERY_DAY) return words.everyDay;
+    if (mask === WEEKDAYS) return words.weekdays;
+    if (mask === WEEKENDS) return words.weekends;
+    if (mask === 0) return words.noDays;
+    var out = [];
+    DAY_BITS.forEach(function (bit, i) { if (mask & bit) out.push(dayNames[i]); });
+    return out.join(", ");
+}
+
+function sceneAircon(scene, acKey) {
+    return scene && scene.aircons ? scene.aircons[acKey] || null : null;
+}
+
+// Open zone names for a scene, MyZone first, using live names where possible.
+function sceneOpenZones(sceneAc, liveAc) {
+    if (!sceneAc || !sceneAc.zones)
+        return [];
+    var mz = validMyZone(sceneAc.info);
+    return Object.keys(sceneAc.zones).sort().filter(function (k) {
+        return sceneAc.zones[k].state === "open";
+    }).map(function (k) {
+        var live = liveAc && liveAc.zones ? liveAc.zones[k] : null;
+        return { key: k, name: live ? String(live.name) : k, isMyZone: Number(sceneAc.zones[k].number || k.slice(1)) === mz };
+    }).sort(function (a, b) { return (b.isMyZone ? 1 : 0) - (a.isMyZone ? 1 : 0); });
+}
+
+// A new scene draft that starts from the aircon's current state.
+function draftFromCurrent(id, name, ac, acKey) {
+    var info = ac.info || {};
+    var zones = {};
+    Object.keys(ac.zones || {}).forEach(function (k) {
+        var z = ac.zones[k];
+        zones[k] = { number: z.number, state: z.state, value: z.value, setTemp: z.setTemp, motionConfig: z.motionConfig };
+    });
+    var aircons = {};
+    aircons[acKey || "ac1"] = {
+        info: { uid: info.uid, name: info.name, state: "on", mode: info.mode, fan: info.fan,
+                setTemp: info.setTemp, myZone: info.myZone, freshAirStatus: info.freshAirStatus },
+        zones: zones
+    };
+    return {
+        id: id, name: name,
+        timerEnabled: false, activeDays: EVERY_DAY, startTime: 7 * 60,
+        airconStopTimeEnabled: false, airconStopTime: 9 * 60, myTimeEnabled: false,
+        aircons: aircons
+    };
+}
+
+// The JSON for setScene: the whole scene, so its aircon snapshot is replaced
+// as a unit (the tablet keeps fields that are missing, but swaps whole maps).
+function scenePayload(draft, acKey) {
+    var out = {
+        id: draft.id, name: String(draft.name || "").slice(0, 12),
+        timerEnabled: Boolean(draft.timerEnabled), activeDays: Number(draft.activeDays) & EVERY_DAY,
+        startTime: Number(draft.startTime) % 1440,
+        airconStopTimeEnabled: Boolean(draft.airconStopTimeEnabled), airconStopTime: Number(draft.airconStopTime) % 1440,
+        myTimeEnabled: Boolean(draft.myTimeEnabled)
+    };
+    var src = sceneAircon(draft, acKey) || sceneAircon(draft, "ac1");
+    if (src) {
+        out.aircons = {};
+        out.aircons[acKey] = clone(src);
+    }
+    return out;
+}
+
+function validSceneName(name) {
+    var n = String(name || "").trim();
+    return n.length > 0 && n.length <= 12 && n.indexOf("\\") < 0;
 }

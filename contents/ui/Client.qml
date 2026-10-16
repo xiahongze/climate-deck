@@ -38,6 +38,8 @@ Item {
     property var store: null
 
     signal commandFailed(string reason)
+    // After every poll that brought fresh data.
+    signal refreshed()
 
     property var _pending: ({})
     property var _queue: []
@@ -74,6 +76,13 @@ Item {
         }
     }
 
+    // Sends `command` (e.g. "setScene") with a json body through the same
+    // queue, calls done(ok, reason), then re-reads the tablet.
+    function request(command, obj, done) {
+        _queue.push({ command: command, payload: obj, alone: true, done: done || null });
+        _pump();
+    }
+
     function pendingValue(path) {
         return _pending[path] ? _pending[path].value : undefined;
     }
@@ -92,6 +101,23 @@ Item {
         // Queued edits target the same aircon, so consecutive ones can go as
         // one request; `alone` commands keep their own request and order.
         const first = _queue.shift();
+        if (first.command) {
+            const url = MyPlace.commandUrl(host, first.command, first.payload);
+            if (!url)
+                return;
+            _busy = true;
+            transport(url, timeoutMs, function(ok, status, text) {
+                _busy = false;
+                const ack = ok && status === 200 ? MyPlace.parseAck(text) : { ok: false, reason: i18n("No reply from the tablet") };
+                if (!ack.ok)
+                    lastError = ack.reason;
+                if (first.done)
+                    first.done(ack.ok, ack.reason);
+                followUp.restart();
+                _pump();
+            });
+            return;
+        }
         const payload = MyPlace.clone(first.payload);
         while (!first.alone && _queue.length && !_queue[0].alone)
             MyPlace.deepMerge(payload, _queue.shift().payload);
@@ -127,6 +153,7 @@ Item {
             _reconcile();
             _record();
             _rebuild();
+            refreshed();
         } else {
             failures += 1;
             lastError = result.reason;
