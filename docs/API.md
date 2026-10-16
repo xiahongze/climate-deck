@@ -226,7 +226,7 @@ Payload (URL-encode it; NanoHTTPD decodes the parameter):
 | `fan` | `low`, `medium`, `high`, `auto`, `autoAA` |
 | `setTemp` | The protocol carries 0.5 °C steps (`setTemp*2` in the unit frame), but the tablet **doesn't range-check it**. The app uses whole degrees from **16 to 32**, and clients should clamp to that. |
 | `myZone` | 0–10 |
-| `countDownToOn`, `countDownToOff` | Minutes, 0–720. 0 cancels. |
+| `countDownToOn`, `countDownToOff` | Minutes, 0–720. 0 cancels. The tablet counts them down itself, and `721` is rejected with `Aircon countDownToOn cannot be greater than 720 minutes`. **Verified** |
 | `freshAirStatus` | `on`, `off`. Ignored if fresh air isn't fitted. |
 | `myAutoModeEnabled`, `myAutoCoolTargetTemp` (20–32), `myAutoHeatTargetTemp` (16–28, at least 4 below cool), `quietNightModeEnabled`, `climateControlModeEnabled`, `aaAutoFanModeEnabled` | Feature settings. |
 | `name` | 12 characters max. |

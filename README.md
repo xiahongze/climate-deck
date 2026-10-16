@@ -23,6 +23,7 @@ Scenes have their own page, with an editor for days, times and the aircon settin
 - **Header.** Site and aircon name, link status (`LIVE`, `RETRYING`, `OFFLINE`) and the outdoor temperature when the tablet has a valid reading.
 - **Inside.** The average of every zone with a working sensor, the coldest-to-warmest range, and a trace of the last few hours.
 - **Target and MyZone.** The set point, with − and +. When a MyZone is set, this is the MyZone zone's target, matching the MyPlace app. Click the zone name under the target (`BED 1 ▾`) to pick a different MyZone, the zone the system optimises for. Only zones with a working sensor are listed; choosing a closed zone opens it, as the app does.
+- **Quick timer.** Under the mode and fan selectors: turn the unit off in (while it runs) or on in (while it's off) 30 min, 1 h, 2 h or 4 h. While a timer runs, the row shows the time left, with **+30m** and **Cancel**. The tablet runs the countdown itself, up to 12 hours.
 - **Power, mode and fan.** Cool, Heat, Fan, Dry, plus MyAuto if it is enabled on your system. Low, Medium, High and Auto. Auto is MyFan when the system supports it.
 - **Zones.** Each zone shows:
   - its temperature, with a colour strip running from icy blue to warm red
@@ -31,7 +32,7 @@ Scenes have their own page, with an editor for days, times and the aircon settin
   - a MyZone badge where it applies
   - sensor warnings
   - a history sparkline
-- **Footer.** How fresh the data is, unit error codes, the filter-clean reminder and on/off timers.
+- **Footer.** How fresh the data is, unit error codes and the filter-clean reminder.
 - **Scenes** (the second tab). These are the scenes stored on the tablet:
   - Each card shows the days, the start and stop times, and what the scene sets (mode, target, fan, open zones with ★ for the MyZone).
   - **Run now** applies a scene at once.

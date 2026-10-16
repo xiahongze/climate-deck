@@ -82,4 +82,30 @@ TestCase {
         verify(deck.zones.find(z => z.key === "z01").isMyZone);
         verify(findChild(deck, "myZoneChip").visible);
     }
+
+    function test_quick_timer() {
+        tablet.log = [];
+        // Unit is off in the fixture, so presets set the turn-on countdown.
+        const preset = findChild(deck, "timer60");
+        verify(preset !== null && preset.visible);
+        mouseClick(preset);
+        compare(JSON.stringify(tablet.commands()), '[{"ac1":{"info":{"countDownToOn":60}}}]');
+        compare(deck.duration(60), "1 h");
+        compare(deck.duration(85), "1 h 25 min");
+        compare(deck.duration(90, true), "1h 30m");
+        // The tablet reports it counting down; Cancel sends 0.
+        tablet.system.aircons.ac1.info.countDownToOn = 59;
+        client.poll();
+        const cancel = findChild(deck, "timerCancel");
+        tryVerify(() => cancel.visible);
+        waitForRendering(deck);
+        deck.lastTimerTap = 0;
+        tablet.log = [];
+        mouseClick(cancel);
+        compare(JSON.stringify(tablet.commands()), '[{"ac1":{"info":{"countDownToOn":0}}}]');
+        // An immediate second click on whatever replaced Cancel is ignored.
+        waitForRendering(deck);
+        mouseClick(findChild(deck, "timer240"));
+        compare(tablet.commands().length, 1);
+    }
 }

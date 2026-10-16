@@ -373,3 +373,23 @@ function validSceneName(name) {
     var n = String(name || "").trim();
     return n.length > 0 && n.length <= 12 && n.indexOf("\\") < 0;
 }
+
+// ---- Quick timer --------------------------------------------------------------
+// The unit's own countdowns: minutes until it turns off (while on) or on (while off).
+
+var MAX_COUNTDOWN = 720;
+
+function countdownField(info) {
+    return info && info.state === "on" ? "countDownToOff" : "countDownToOn";
+}
+
+function countdownMinutes(info) {
+    var m = Number(info ? info[countdownField(info)] : 0);
+    return isFinite(m) && m > 0 ? m : 0;
+}
+
+function countdownPayload(info, minutes) {
+    var out = { info: {} };
+    out.info[countdownField(info)] = Math.max(0, Math.min(MAX_COUNTDOWN, Math.round(Number(minutes) || 0)));
+    return out;
+}

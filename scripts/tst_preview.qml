@@ -9,7 +9,7 @@ TestCase {
     id: preview
     name: "Screenshots"
     width: 600
-    height: 620
+    height: 660
     visible: true
     when: windowShown
     property string fixture: ""
@@ -92,12 +92,14 @@ TestCase {
         ac.info.mode = "heat";
         ac.info.fan = "autoAA";
         ac.zones.z03.state = "open";
+        ac.info.countDownToOff = 85;
         client.poll();
         deck.themeMode = "dark";
         save("climate-deck-heating");
 
         // Scenes page, with the morning warm-up on a timer.
         ac.info.state = "off";
+        ac.info.countDownToOff = 0;
         tablet.system.myScenes.scenes.s10002.timerEnabled = true;
         client.poll();
         deck.page = 1;

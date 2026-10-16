@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Quick timer on the climate page: turn off (or on) in 30 min to 4 h, with +30m and Cancel, using the unit's own countdown.
+
 ## 0.2.0 — 2026-10-16
 
 - Scenes page: run, create, edit and delete scenes, and switch their timers, with days, start and stop times, and the aircon settings each applies.

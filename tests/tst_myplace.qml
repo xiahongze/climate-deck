@@ -145,4 +145,13 @@ TestCase {
         compare(p.aircons.ac1.zones.z04.setTemp, 24);
         compare(p.lights, undefined); // only what we manage
     }
+
+    function test_countdown() {
+        compare(MyPlace.countdownField({ state: "on" }), "countDownToOff");
+        compare(MyPlace.countdownField({ state: "off" }), "countDownToOn");
+        compare(MyPlace.countdownMinutes({ state: "on", countDownToOff: 45, countDownToOn: 9 }), 45);
+        compare(MyPlace.countdownMinutes({ state: "off", countDownToOn: 0 }), 0);
+        compare(JSON.stringify(MyPlace.countdownPayload({ state: "off" }, 900)), '{"info":{"countDownToOn":720}}');
+        compare(JSON.stringify(MyPlace.countdownPayload({ state: "on" }, 0)), '{"info":{"countDownToOff":0}}');
+    }
 }

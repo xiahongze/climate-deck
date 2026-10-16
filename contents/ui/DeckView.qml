@@ -117,6 +117,25 @@ Item {
             client.command(cmd, 0, true);
     }
 
+    // 85 -> "1 h 25 min"; compact: 30 -> "30m", 120 -> "2h".
+    function duration(minutes, compact) {
+        const h = Math.floor(minutes / 60), m = minutes % 60;
+        if (compact)
+            return h === 0 ? i18n("%1m", m) : m === 0 ? i18n("%1h", h) : i18n("%1h %2m", h, m);
+        return h === 0 ? i18n("%1 min", m) : m === 0 ? i18n("%1 h", h) : i18n("%1 h %2 min", h, m);
+    }
+
+    // The buttons swap places when a timer starts or stops, so a fast second
+    // click would land on a different one; ignore it.
+    property double lastTimerTap: 0
+    function setCountdown(minutes) {
+        const now = Date.now();
+        if (now - lastTimerTap < 600)
+            return;
+        lastTimerTap = now;
+        client.command(MyPlace.countdownPayload(info, minutes), 0);
+    }
+
     // A short message over the footer; errors show in red.
     function notify(message, isError) {
         toast.message = message;
@@ -490,6 +509,62 @@ Item {
                     }
                 }
 
+                // Quick timer: the unit's own countdown to off (while on) or on.
+                RowLayout {
+                    id: timerRow
+                    objectName: "timerRow"
+                    readonly property int remaining: MyPlace.countdownMinutes(root.info)
+                    readonly property color tone: root.unitOn ? root.accent : root.modeAccents[root.info.mode] || root.colors.neutral
+                    Layout.fillWidth: true
+                    spacing: Kirigami.Units.smallSpacing
+                    Controls.Label {
+                        text: timerRow.remaining > 0
+                            ? (root.unitOn ? i18n("OFF IN") : i18n("ON IN"))
+                            : (root.unitOn ? i18n("TURN OFF IN") : i18n("TURN ON IN"))
+                        color: timerRow.remaining > 0 ? timerRow.tone : root.colors.muted
+                        font.pixelSize: Kirigami.Units.gridUnit * 0.55
+                        font.weight: Font.DemiBold
+                        font.letterSpacing: 1.4
+                    }
+                    Controls.Label {
+                        visible: timerRow.remaining > 0
+                        text: root.duration(timerRow.remaining)
+                        color: root.colors.ink
+                        font.pixelSize: Kirigami.Units.gridUnit * 0.75
+                        font.features: { "tnum": 1 }
+                    }
+                    Item { Layout.fillWidth: true }
+                    Repeater {
+                        model: timerRow.remaining > 0 ? [] : [30, 60, 120, 240]
+                        delegate: PillButton {
+                            required property int modelData
+                            objectName: "timer" + modelData
+                            text: root.duration(modelData, true)
+                            ink: root.colors.ink
+                            tone: timerRow.tone
+                            interactive: root.canControl
+                            onClicked: root.setCountdown(modelData)
+                        }
+                    }
+                    PillButton {
+                        visible: timerRow.remaining > 0
+                        text: i18n("+30m")
+                        ink: root.colors.ink
+                        tone: timerRow.tone
+                        interactive: root.canControl && timerRow.remaining < MyPlace.MAX_COUNTDOWN
+                        onClicked: root.setCountdown(timerRow.remaining + 30)
+                    }
+                    PillButton {
+                        objectName: "timerCancel"
+                        visible: timerRow.remaining > 0
+                        text: i18n("Cancel")
+                        ink: root.colors.ink
+                        tone: root.colors.ink
+                        interactive: root.canControl
+                        onClicked: root.setCountdown(0)
+                    }
+                }
+
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.topMargin: Kirigami.Units.smallSpacing
@@ -558,18 +633,6 @@ Item {
                         color: root.colors.bad
                         font.pixelSize: Kirigami.Units.gridUnit * 0.52
                         font.weight: Font.DemiBold
-                    }
-                    Controls.Label {
-                        visible: root.unitOn && root.info.countDownToOff > 0
-                        text: i18n("Off in %1 min", root.info.countDownToOff)
-                        color: root.colors.muted
-                        font.pixelSize: Kirigami.Units.gridUnit * 0.52
-                    }
-                    Controls.Label {
-                        visible: !root.unitOn && root.info.countDownToOn > 0
-                        text: i18n("On in %1 min", root.info.countDownToOn)
-                        color: root.colors.muted
-                        font.pixelSize: Kirigami.Units.gridUnit * 0.52
                     }
                 }
                 Item { Layout.fillHeight: true }
