@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-10-17
 
 - Setup page: rename the aircon and zones; MyComfort options (MySleep$aver, MyFan speed, MyZone/MyTemp/MyAuto temperature control, MyAuto range); Show actual temperature.
 - Quick timer on the climate page: turn off (or on) in 30 min to 4 h, with +30m and Cancel, using the unit's own countdown.
