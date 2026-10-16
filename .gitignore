@@ -1,0 +1,4 @@
+dist/
+*.qmlc
+*.jsc
+__pycache__/

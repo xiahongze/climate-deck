@@ -1,0 +1,22 @@
+name: Release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    container: archlinux:base
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Qt and Plasma tooling
+        run: pacman -Syu --noconfirm qt6-declarative plasma-workspace kirigami python make
+      - run: make test
+      - name: Check tag matches metadata version
+        run: test "v$(python -c 'import json; print(json.load(open("metadata.json"))["KPlugin"]["Version"])')" = "$GITHUB_REF_NAME"
+      - run: ./scripts/package.sh
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/climate-deck.plasmoid
+          generate_release_notes: true

@@ -1,0 +1,492 @@
+{
+  "aircons": {
+    "ac1": {
+      "info": {
+        "aaAutoFanModeEnabled": true,
+        "activationCodeStatus": "noCode",
+        "airconErrorCode": "",
+        "cbFWRevMajor": 10,
+        "cbFWRevMinor": 30,
+        "cbType": 1,
+        "climateControlModeEnabled": false,
+        "climateControlModeIsRunning": false,
+        "constant1": 1,
+        "constant2": 0,
+        "constant3": 0,
+        "countDownToOff": 0,
+        "countDownToOn": 0,
+        "dbFWRevMajor": 17,
+        "dbFWRevMinor": 28,
+        "fan": "low",
+        "filterCleanStatus": 0,
+        "freshAirStatus": "none",
+        "mode": "cool",
+        "myAutoModeCurrentSetMode": "cool",
+        "myAutoModeEnabled": false,
+        "myAutoModeIsRunning": false,
+        "myZone": 4,
+        "name": "AC",
+        "noOfConstants": 1,
+        "noOfZones": 6,
+        "quietNightModeEnabled": false,
+        "quietNightModeIsRunning": false,
+        "rfFWRevMajor": 4,
+        "rfSysID": 0,
+        "setTemp": 28.0,
+        "state": "off",
+        "uid": "00000",
+        "unitType": 17
+      },
+      "zones": {
+        "z01": {
+          "SensorUid": "000000",
+          "error": 0,
+          "followers": [],
+          "following": 0,
+          "maxDamper": 100,
+          "measuredTemp": 19.6,
+          "minDamper": 0,
+          "motion": 0,
+          "motionConfig": 1,
+          "name": "Living",
+          "number": 1,
+          "rssi": 47,
+          "setTemp": 25.0,
+          "state": "close",
+          "tempSensorClash": false,
+          "type": 1,
+          "value": 5
+        },
+        "z02": {
+          "SensorUid": "000000",
+          "error": 0,
+          "followers": [],
+          "following": 0,
+          "maxDamper": 90,
+          "measuredTemp": 18.9,
+          "minDamper": 0,
+          "motion": 0,
+          "motionConfig": 1,
+          "name": "Lounge",
+          "number": 2,
+          "rssi": 51,
+          "setTemp": 25.0,
+          "state": "close",
+          "tempSensorClash": false,
+          "type": 1,
+          "value": 5
+        },
+        "z03": {
+          "SensorUid": "000000",
+          "error": 0,
+          "followers": [],
+          "following": 0,
+          "maxDamper": 85,
+          "measuredTemp": 19.6,
+          "minDamper": 0,
+          "motion": 0,
+          "motionConfig": 1,
+          "name": "Study",
+          "number": 3,
+          "rssi": 42,
+          "setTemp": 25.0,
+          "state": "close",
+          "tempSensorClash": false,
+          "type": 1,
+          "value": 5
+        },
+        "z04": {
+          "SensorUid": "000000",
+          "error": 0,
+          "followers": [],
+          "following": 0,
+          "maxDamper": 100,
+          "measuredTemp": 20.0,
+          "minDamper": 0,
+          "motion": 0,
+          "motionConfig": 1,
+          "name": "Bed 1",
+          "number": 4,
+          "rssi": 43,
+          "setTemp": 24.0,
+          "state": "open",
+          "tempSensorClash": false,
+          "type": 1,
+          "value": 100
+        },
+        "z05": {
+          "SensorUid": "000000",
+          "error": 0,
+          "followers": [],
+          "following": 0,
+          "maxDamper": 100,
+          "measuredTemp": 19.4,
+          "minDamper": 0,
+          "motion": 0,
+          "motionConfig": 1,
+          "name": "Bed 2",
+          "number": 5,
+          "rssi": 58,
+          "setTemp": 23.0,
+          "state": "open",
+          "tempSensorClash": false,
+          "type": 1,
+          "value": 5
+        },
+        "z06": {
+          "SensorUid": "000000",
+          "error": 0,
+          "followers": [],
+          "following": 0,
+          "maxDamper": 85,
+          "measuredTemp": 19.4,
+          "minDamper": 0,
+          "motion": 0,
+          "motionConfig": 1,
+          "name": "Bed 3",
+          "number": 6,
+          "rssi": 41,
+          "setTemp": 23.0,
+          "state": "open",
+          "tempSensorClash": false,
+          "type": 1,
+          "value": 5
+        }
+      }
+    }
+  },
+  "myAddOns": {
+    "hueBridges": {},
+    "hueBridgesOrder": []
+  },
+  "myGarageRFControllers": {
+    "garageControllers": {},
+    "garageControllersOrder": []
+  },
+  "myLights": {
+    "groups": {},
+    "groupsOrder": [],
+    "lights": {},
+    "system": {
+      "sunsetTime": "07:10 PM"
+    }
+  },
+  "myMonitors": {
+    "monitors": {},
+    "monitorsOrder": []
+  },
+  "myScenes": {
+    "scenes": {
+      "s10001": {
+        "activeDays": 127,
+        "airconStopTime": 0,
+        "airconStopTimeEnabled": true,
+        "aircons": {
+          "ac1": {
+            "info": {
+              "fan": "low",
+              "freshAirStatus": "none",
+              "mode": "heat",
+              "myZone": 4,
+              "name": "Aircon",
+              "setTemp": 28.0,
+              "state": "on",
+              "uid": "00000"
+            },
+            "zones": {
+              "z01": {
+                "motionConfig": 1,
+                "number": 1,
+                "setTemp": 16.0,
+                "state": "close",
+                "tempSensorClash": false,
+                "value": 50
+              },
+              "z02": {
+                "motionConfig": 1,
+                "number": 2,
+                "setTemp": 16.0,
+                "state": "close",
+                "tempSensorClash": false,
+                "value": 100
+              },
+              "z03": {
+                "motionConfig": 1,
+                "number": 3,
+                "setTemp": 16.0,
+                "state": "close",
+                "tempSensorClash": false,
+                "value": 100
+              },
+              "z04": {
+                "motionConfig": 1,
+                "number": 4,
+                "setTemp": 18.0,
+                "state": "open",
+                "tempSensorClash": false,
+                "value": 100
+              },
+              "z05": {
+                "motionConfig": 1,
+                "number": 5,
+                "setTemp": 18.0,
+                "state": "open",
+                "tempSensorClash": false,
+                "value": 5
+              },
+              "z06": {
+                "motionConfig": 1,
+                "number": 6,
+                "setTemp": 18.0,
+                "state": "open",
+                "tempSensorClash": false,
+                "value": 65
+              }
+            }
+          }
+        },
+        "id": "s10001",
+        "lights": {},
+        "monitors": {},
+        "myTimeEnabled": false,
+        "name": "Sleep",
+        "sonos": {},
+        "startTime": 1260,
+        "summary": "Days this scene will run:\nMonday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday\n\nMyAir:\nAircon: on, mode: heat, fan speed: low, 18\u00b0C\nopen zones:\nBed 1*, Bed 2, Bed 3",
+        "things": {},
+        "timerEnabled": false
+      },
+      "s10002": {
+        "activeDays": 127,
+        "airconStopTime": 405,
+        "airconStopTimeEnabled": true,
+        "aircons": {
+          "ac1": {
+            "info": {
+              "fan": "low",
+              "freshAirStatus": "none",
+              "mode": "heat",
+              "myZone": 4,
+              "name": "Aircon",
+              "setTemp": 28.0,
+              "state": "on",
+              "uid": "00000"
+            },
+            "zones": {
+              "z01": {
+                "motionConfig": 1,
+                "number": 1,
+                "setTemp": 16.0,
+                "state": "close",
+                "tempSensorClash": false,
+                "value": 50
+              },
+              "z02": {
+                "motionConfig": 1,
+                "number": 2,
+                "setTemp": 16.0,
+                "state": "close",
+                "tempSensorClash": false,
+                "value": 100
+              },
+              "z03": {
+                "motionConfig": 1,
+                "number": 3,
+                "setTemp": 17.0,
+                "state": "close",
+                "tempSensorClash": false,
+                "value": 100
+              },
+              "z04": {
+                "motionConfig": 1,
+                "number": 4,
+                "setTemp": 17.0,
+                "state": "open",
+                "tempSensorClash": false,
+                "value": 100
+              },
+              "z05": {
+                "motionConfig": 1,
+                "number": 5,
+                "setTemp": 17.0,
+                "state": "open",
+                "tempSensorClash": false,
+                "value": 5
+              },
+              "z06": {
+                "motionConfig": 1,
+                "number": 6,
+                "setTemp": 18.0,
+                "state": "open",
+                "tempSensorClash": false,
+                "value": 65
+              }
+            }
+          }
+        },
+        "id": "s10002",
+        "lights": {},
+        "monitors": {},
+        "myTimeEnabled": false,
+        "name": "Morning",
+        "sonos": {},
+        "startTime": 285,
+        "summary": "Days this scene will run:\nMonday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday\n\nMyAir:\nAircon: on, mode: heat, fan speed: low, 17\u00b0C\nopen zones:\nBed 1*, Bed 2, Bed 3",
+        "things": {},
+        "timerEnabled": false
+      },
+      "s10003": {
+        "activeDays": 127,
+        "airconStopTime": 1230,
+        "airconStopTimeEnabled": true,
+        "aircons": {
+          "ac1": {
+            "info": {
+              "fan": "medium",
+              "freshAirStatus": "none",
+              "mode": "heat",
+              "myZone": 1,
+              "name": "Aircon",
+              "setTemp": 28.0,
+              "state": "on",
+              "uid": "00000"
+            },
+            "zones": {
+              "z01": {
+                "motionConfig": 1,
+                "number": 1,
+                "setTemp": 18.0,
+                "state": "open",
+                "tempSensorClash": false,
+                "value": 50
+              },
+              "z02": {
+                "motionConfig": 1,
+                "number": 2,
+                "setTemp": 18.0,
+                "state": "open",
+                "tempSensorClash": false,
+                "value": 100
+              },
+              "z03": {
+                "motionConfig": 1,
+                "number": 3,
+                "setTemp": 18.0,
+                "state": "open",
+                "tempSensorClash": false,
+                "value": 100
+              },
+              "z04": {
+                "motionConfig": 1,
+                "number": 4,
+                "setTemp": 17.0,
+                "state": "close",
+                "tempSensorClash": false,
+                "value": 100
+              },
+              "z05": {
+                "motionConfig": 1,
+                "number": 5,
+                "setTemp": 17.0,
+                "state": "close",
+                "tempSensorClash": false,
+                "value": 5
+              },
+              "z06": {
+                "motionConfig": 1,
+                "number": 6,
+                "setTemp": 18.0,
+                "state": "close",
+                "tempSensorClash": false,
+                "value": 65
+              }
+            }
+          }
+        },
+        "id": "s10003",
+        "lights": {},
+        "monitors": {},
+        "myTimeEnabled": false,
+        "name": "Evening",
+        "sonos": {},
+        "startTime": 1080,
+        "summary": "Days this scene will run:\nMonday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday\n\nMyAir:\nAircon: on, mode: heat, fan speed: med, 18\u00b0C\nopen zones:\nLiving*, Lounge, Study",
+        "things": {},
+        "timerEnabled": false
+      }
+    },
+    "scenesOrder": [
+      "s10001",
+      "s10002",
+      "s10003"
+    ]
+  },
+  "mySensors": {
+    "sensors": {},
+    "sensorsOrder": []
+  },
+  "myThings": {
+    "groups": {},
+    "groupsOrder": [],
+    "system": {},
+    "things": {}
+  },
+  "myView": {
+    "cameras": [],
+    "locks": []
+  },
+  "snapshots": {},
+  "system": {
+    "aaServiceRev": "14.150",
+    "allTspErrorCodes": {},
+    "backupId": "00000000-0000-0000-0000-000000000000",
+    "country": "Australia",
+    "dealerPhoneNumber": "",
+    "deviceIds": [
+      "phoneA0000000000000000000000"
+    ],
+    "deviceIdsV2": {
+      "phoneA0000000000000000000000": ""
+    },
+    "deviceNames": {
+      "phoneA0000000000000000000000": "Example phone"
+    },
+    "deviceNotificationVersion": {
+      "phoneA0000000000000000000000": "V3"
+    },
+    "drawLightsTab": false,
+    "drawThingsTab": false,
+    "garageDoorReminderWaitTime": 2,
+    "garageDoorSecurityPinEnabled": true,
+    "hasAircons": true,
+    "hasLights": false,
+    "hasLocks": false,
+    "hasSensors": false,
+    "hasThings": false,
+    "hasThingsBOG": false,
+    "hasThingsLight": false,
+    "isValidSuburbTemp": true,
+    "latitude": -33.8688,
+    "lockDoorReminderWaitTime": 2,
+    "logoPIN": "0000",
+    "longitude": 151.2093,
+    "membershipStatus": "NotAMember",
+    "mid": "00000",
+    "myAppRev": "15.1548",
+    "name": "MyPlace",
+    "needsUpdate": false,
+    "noOfAircons": 1,
+    "noOfSnapshots": 0,
+    "postCode": "2000",
+    "remoteAccessPairingEnabled": true,
+    "rid": "00000",
+    "showMeasuredTemp": true,
+    "splitTypeSystem": false,
+    "suburbTemp": 17.5,
+    "sysType": "MyAir5",
+    "tspErrorCode": "noError",
+    "tspIp": "192.168.1.50",
+    "tspModel": "PIC8GS12",
+    "versions": {}
+  }
+}
