@@ -44,11 +44,11 @@ The Setup tab renames zones and holds the MyComfort options:
   - **Edit** opens the editor, and **Delete** asks for a second click.
   - **+ New scene** starts from the aircon's current settings.
   - The editor sets the name, days, start time, an optional turn-off time, power, mode, fan, target, MyZone, and each zone's open/closed state and target.
+  - The Android app only offers scene editing on the wall tablet. The tablet accepts it from any device on your network, and the tablet runs the timers itself.
 - **Setup** (the third tab):
   - rename the aircon and its zones (12 characters max)
   - the MyComfort options from the app's Setup screen: MySleep$aver, MyFan speed, temperature control (MyZone, MyTemp or MyAuto) and the MyAuto range
   - the system option to show actual temperatures
-  - The Android app only offers scene editing on the wall tablet. The tablet accepts it from any device on your network, and the tablet runs the timers itself.
 
 Changes show immediately. Taps on − and + are batched into one command, and the widget re-reads the tablet a moment later to confirm. If the tablet stops answering, the last reading stays on screen, dimmed, and the controls lock until it is back.
 
