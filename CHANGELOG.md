@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 — 2026-10-16
 
 - Scenes page: run, create, edit and delete scenes, and switch their timers, with days, start and stop times, and the aircon settings each applies.
 - Saves are confirmed from the next poll, so a dropped save (for example past 12 scenes) shows an error.
