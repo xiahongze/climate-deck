@@ -61,6 +61,8 @@ History is one sample a minute, kept for four hours. It is saved in Plasma's loc
 - `kpackagetool6`
 - Python 3, for packaging only
 
+In a panel, Climate Deck shows the indoor average to one decimal place. Hover for the room temperature range, aircon mode and target; stale readings are identified. Click to open the full controls. The reading follows the panel’s global theme.
+
 ## Install
 
 ```sh
