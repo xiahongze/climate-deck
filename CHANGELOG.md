@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0 — 2026-11-08
+
+- Panel widgets stay compact: indoor average to one decimal place, with hover details for room range, aircon mode and target; text follows the panel theme and dims when readings are stale
+
 ## 0.3.0 — 2026-10-17
 
 - Setup page: rename the aircon and zones; MyComfort options (MySleep$aver, MyFan speed, MyZone/MyTemp/MyAuto temperature control, MyAuto range); Show actual temperature.
